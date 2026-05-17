@@ -30,3 +30,4 @@ Los siguientes enlaces llevan a laboratorios gratuitos de [AWS Skill Builder](ht
 | OpenSearch | SIMULEARN | <https://skillbuilder.aws/learn/7E4FETUE2Y/aws-simulearn-create-an-enterprise-knowledge-assistant/2F4Q5XU8WB> | Asistente de conocimiento con Amazon Bedrock y OpenSearch |
 | Amazon Q | SIMULEARN | <https://skillbuilder.aws/learn/Y2FQ5WF2R2/aws-simulearn-build-and-understand-code-with-amazon-q/1C5TAE62YQ> | Creación de código con Amazon Q |
 | Amazon Quick | SIMULEARN | <https://skillbuilder.aws/learn/2BS4H48DT3/create-an-hr-agent-with-amazon-quick/YRBYXHH7EC> | Amazon Quick para BI y visualización de datos |
+| Cost Management | CURSO | <https://skillbuilder.aws/learn/J59SS92GUN/aws-billing-and-cost-management-espaol-de-espaa/S5NZT5XD94> | AWS Billing y Cost Management
