@@ -28,6 +28,8 @@ Este fichero recoge una serie de comandos de ejemplo para trabajar con AWS CLI
 de forma segura y practica. Los ejemplos usan marcadores como `<REGION>` o
 `<NOMBRE_BUCKET>` para que puedas adaptarlos a tu entorno.
 
+Documentación sobre el uso de AWS CLI se puede encontrar [aquí](https://docs.aws.amazon.com/cli/latest/).
+
 ## 1. Setup inicial
 
 ### Instalar AWS CLI v2
