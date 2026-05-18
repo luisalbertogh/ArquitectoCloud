@@ -28,8 +28,6 @@ Este fichero recoge una serie de comandos de ejemplo para trabajar con AWS CLI
 de forma segura y practica. Los ejemplos usan marcadores como `<REGION>` o
 `<NOMBRE_BUCKET>` para que puedas adaptarlos a tu entorno.
 
-Documentación sobre el uso de AWS CLI se puede encontrar [aquí](https://docs.aws.amazon.com/cli/latest/).
-
 ## 1. Setup inicial
 
 ### Instalar AWS CLI v2
@@ -40,6 +38,17 @@ v2. Si prefieres comprobar si ya esta instalada:
 ```bash
 aws --version
 ```
+
+#### Instalació portable
+
+Descargar versión portable desde [aquí](https://drive.google.com/drive/folders/1QGFxIyCabS4aYWDc5L3uqA1Mki064gI_?dmr=1&ec=wgc-drive-%5Bmodule%5D-goto). En el equipo local:
+
+- Descomprimir al directorio donde tendremos la herramienta.
+- Incluir en el PATH del usuario la ruta: `<directorio_de_instalacion>\AWSCLI_Portable\Amazon\AWSCLIV2\aws.exe`.
+
+  ![AWS_CLI](./pics/aws_cli.PNG)
+
+- Desde una linea de comandos, ejecutar `aws --version` para comprobar su instalación.
 
 ### Configurar credenciales y region por defecto
 
