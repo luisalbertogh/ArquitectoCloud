@@ -1,0 +1,60 @@
+direction: right
+
+# ─── External actor: operator who uploads files to S3 ───
+user: {
+    label: "Developer /\nOperator"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/others/user.svg
+    style: {
+        font-size: 35
+    }
+}
+
+# ─── System boundary: the serverless file processing application ───
+system: {
+    label: "Serverless File Processing\nApplication (AWS)"
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/aws_icon.svg
+    style: {
+        font-size: 50
+        fill: "#E8F4FD"
+        stroke: "#2196F3"
+        stroke-width: 3
+    }
+}
+
+# ─── Amazon CloudWatch: observability platform ───
+cloudwatch: {
+    label: "Amazon CloudWatch\n(Monitoring & Observability)"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/cloud_watch.svg
+    style: {
+        font-size: 35
+    }
+}
+
+# ─── AWS IAM: identity and access control ───
+iam: {
+    label: "AWS IAM\n(Identity & Access Management)"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/iam_role.svg
+    style: {
+        font-size: 35
+    }
+}
+
+# ─── Connections ───
+
+# User uploads an object to the source bucket
+user -> system: "Uploads file to\nSource S3 Bucket" {
+    style: { font-size: 35 }
+}
+
+# System emits telemetry to CloudWatch
+system -> cloudwatch: "Emits logs,\nmetrics & alarms" {
+    style: { font-size: 35 }
+}
+
+# IAM provides the execution role and policies
+iam -> system: "Provides Execution Role\n& S3 access policies" {
+    style: { font-size: 35 }
+}

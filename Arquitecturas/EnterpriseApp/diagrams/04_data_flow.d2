@@ -1,0 +1,121 @@
+direction: right
+
+# ─── Data source: external internet traffic ───
+internet: {
+    label: "Internet\n(End User)"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/others/internet.svg
+    style: { font-size: 38 }
+}
+
+# ─── Security filter: WAF evaluates and blocks malicious traffic ───
+waf: {
+    label: "AWS WAF\n────────────────\n① OWASP rule set check\n② IP reputation filter\n③ Rate-limit enforcement\n④ Allow / Block decision"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/waf.svg
+    style: { font-size: 28 }
+}
+
+# ─── Load balancer: TLS termination and traffic distribution ───
+alb: {
+    label: "Application Load Balancer\n─────────────────────────\n① TLS termination (ACM cert)\n② HTTP :80 → HTTPS redirect\n③ Round-robin target selection\n④ Health-check gating\n⑤ Log to S3 (async)"
+    style: {
+        fill: "#E8F5E9"
+        stroke: "#4CAF50"
+        font-size: 28
+    }
+}
+
+# ─── Application processing: Tomcat/JBoss business logic ───
+ec2: {
+    label: "EC2 Auto Scaling Group\n(Tomcat / JBoss)\n──────────────────────────\n① Receive HTTP request\n② Retrieve DB credentials\n③ Execute business logic\n④ Query Aurora (write/read)\n⑤ Build and return response"
+    style: {
+        fill: "#E3F2FD"
+        stroke: "#2196F3"
+        font-size: 28
+    }
+}
+
+# ─── Credential store: Secrets Manager caches and rotates DB secrets ───
+secrets: {
+    label: "AWS Secrets Manager\n──────────────────────\n• Provides DB credentials\n• Cache TTL: 5 minutes\n• Auto-rotation every 30 days"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/secrets.svg
+    style: { font-size: 28 }
+}
+
+# ─── Primary database: Aurora Serverless v2 writer instance ───
+aurora_writer: {
+    label: "Aurora Serverless v2\nWriter  (AZ-1 — PRIMARY)\n────────────────────────\n• DDL / DML writes\n• Consistent reads\n• Auto-scales: 0.5–32 ACU\n• Storage: 6 copies across 3 AZs"
+    shape: cylinder
+    style: {
+        fill: "#FCE4EC"
+        stroke: "#E91E63"
+        font-size: 28
+    }
+}
+
+# ─── Read replica: Aurora reader for distributing read-only queries ───
+aurora_reader: {
+    label: "Aurora Serverless v2\nReader Replica  (AZ-2 — HA)\n────────────────────────────\n• Read-only SELECT queries\n• HA failover target (<30 s)\n• Auto-scales: 0.5–32 ACU"
+    shape: cylinder
+    style: {
+        fill: "#FFEEFF"
+        stroke: "#880E4F"
+        font-size: 28
+    }
+}
+
+# ─── Observability: CloudWatch collects all telemetry ───
+cloudwatch: {
+    label: "Amazon CloudWatch\n──────────────────\n• ALB access logs & metrics\n• EC2 application logs\n• Aurora slow-query logs\n• Alarms & Dashboards"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/cloud_watch.svg
+    style: { font-size: 28 }
+}
+
+# ─── Connections — primary request/response data flow ───
+
+# 1. User HTTPS request hits WAF first
+internet -> waf: "① HTTPS (443)\nUser request" { style: { font-size: 35 } }
+
+# 2. WAF forwards only clean traffic to ALB
+waf -> alb: "② Clean HTTPS\n(threats blocked)" { style: { font-size: 35 } }
+
+# 3. ALB terminates TLS and forwards plain HTTP to EC2
+alb -> ec2: "③ HTTP :8080\n(TLS terminated)" { style: { font-size: 35 } }
+
+# 4. EC2 requests DB credentials from Secrets Manager (cache miss path)
+ec2 -> secrets: "④ GetSecretValue\n(cache miss)" { style: { font-size: 35 } }
+
+# 5. Secrets Manager returns cached or freshly-fetched credentials
+secrets -> ec2: "⑤ DB credentials\n(cached 5 min)" { style: { font-size: 35 } }
+
+# 6. EC2 performs write operations on Aurora writer
+ec2 -> aurora_writer: "⑥ DB Write\nINSERT / UPDATE / DELETE" { style: { font-size: 35 } }
+
+# 6b. EC2 routes read-only queries to Aurora reader replica
+ec2 -> aurora_reader: "⑥b DB Read\nSELECT queries" { style: { font-size: 35 } }
+
+# 7. Aurora performs synchronous storage replication (6-way across 3 AZs)
+aurora_writer -> aurora_reader: "⑦ Synchronous\nStorage Replication" { style: { font-size: 35 } }
+
+# 8. Aurora writer returns query result
+aurora_writer -> ec2: "⑧ Query result" { style: { font-size: 35 } }
+
+# 9. EC2 returns the HTTP response to ALB
+ec2 -> alb: "⑨ HTTP 200 OK\n(response body)" { style: { font-size: 35 } }
+
+# 10. ALB returns the HTTPS response to the user via internet
+alb -> internet: "⑩ HTTPS 200 OK\nto end user" { style: { font-size: 35 } }
+
+# ─── Observability flows (async / out-of-band) ───
+
+# ALB sends access logs and metrics to CloudWatch
+alb -> cloudwatch: "Access logs\n& LCU metrics" { style: { font-size: 35 } }
+
+# EC2 sends application logs and instance metrics to CloudWatch
+ec2 -> cloudwatch: "App logs\n& instance metrics" { style: { font-size: 35 } }
+
+# Aurora sends DB performance metrics and slow-query logs
+aurora_writer -> cloudwatch: "DB metrics &\nslow-query logs" { style: { font-size: 35 } }

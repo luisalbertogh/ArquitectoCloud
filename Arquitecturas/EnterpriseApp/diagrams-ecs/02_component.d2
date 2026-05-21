@@ -1,0 +1,267 @@
+direction: right
+
+# ─── External: End Users ───
+users: {
+    label: "End Users\n(Web Browsers)"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/users.svg
+    style: { font-size: 35 }
+}
+
+# ─── Edge & Security Layer: WAF + ACM ───
+edge: {
+    label: "Edge & Security Layer"
+    style: {
+        fill: "#FFF3E0"
+        stroke: "#FF9800"
+        stroke-width: 2
+        font-size: 45
+    }
+
+    # AWS WAF evaluates every request against OWASP rules and IP reputation lists
+    waf: {
+        label: "AWS WAF\n(OWASP Rules / IP Reputation / Rate-Limit)"
+        shape: image
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/waf.svg
+        style: { font-size: 32 }
+    }
+
+    # ACM issues and auto-renews the TLS certificate bound to the ALB listener
+    acm: {
+        label: "AWS Certificate Manager\n(Managed TLS/SSL Certificate)"
+        style: { font-size: 32 }
+    }
+}
+
+# ─── Load Balancing Layer: ALB routes traffic to Fargate task IPs (not instance IDs) ───
+alb_layer: {
+    label: "Load Balancing Layer\n(Public Subnets — Multi-AZ)"
+    style: {
+        fill: "#E8F5E9"
+        stroke: "#4CAF50"
+        stroke-width: 2
+        font-size: 45
+    }
+
+    # SG-ALB: inbound 443/80 from internet; outbound 8080 to SG-TASK
+    sg_alb: {
+        label: "SG-ALB\nInbound : 443, 80 from 0.0.0.0/0\nOutbound: 8080 to SG-TASK"
+        style: {
+            fill: "#FFFDE7"
+            stroke: "#F9A825"
+            stroke-width: 2
+            stroke-dash: 4
+            font-size: 28
+        }
+
+        alb: {
+            label: "Application Load Balancer\n• Multi-AZ  (2+ AZs)\n• HTTPS listener :443 (ACM cert)\n• HTTP :80 → HTTPS redirect\n• WAF WebACL attached\n• IP-based target group (Fargate)"
+            style: {
+                fill: "#C8E6C9"
+                stroke: "#388E3C"
+                font-size: 28
+            }
+        }
+    }
+}
+
+# ─── Application / Web Tier: ECS Cluster with Fargate tasks ───
+app_tier: {
+    label: "Application Tier\n(Private App Subnets — Multi-AZ)"
+    style: {
+        fill: "#E3F2FD"
+        stroke: "#2196F3"
+        stroke-width: 2
+        font-size: 45
+    }
+
+    ecs_cluster: {
+        label: "ECS Cluster (Fargate)"
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/ecs.svg
+        style: {
+            fill: "#BBDEFB"
+            stroke: "#1565C0"
+            font-size: 40
+        }
+
+        ecs_service: {
+            label: "ECS Service\n(desired: 2 / min: 2 / max: 6)\nApp Auto Scaling on CPU/Memory"
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/ecs_service.svg
+            style: {
+                fill: "#90CAF9"
+                stroke: "#1976D2"
+                font-size: 34
+            }
+
+            # SG-TASK: applied at the Fargate task ENI level — replaces SG-WEB from EC2 model
+            sg_task: {
+                label: "SG-TASK\nInbound : 8080 from SG-ALB only\nOutbound: 3306/5432 to SG-DB; 443 to VPC Endpoints"
+                style: {
+                    fill: "#FFFDE7"
+                    stroke: "#F9A825"
+                    stroke-width: 2
+                    stroke-dash: 4
+                    font-size: 26
+                }
+
+                task_az1: {
+                    label: "Fargate Task\n(Tomcat / JBoss)\nAZ-1  :8080"
+                    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/ecs_task.svg
+                    style: { font-size: 24 }
+                }
+
+                task_az2: {
+                    label: "Fargate Task\n(Tomcat / JBoss)\nAZ-2  :8080"
+                    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/ecs_task.svg
+                    style: { font-size: 24 }
+                }
+            }
+        }
+    }
+}
+
+# ─── Database Tier: Aurora Serverless v2 in isolated DB subnets ───
+db_tier: {
+    label: "Database Tier\n(Private DB Subnets — Multi-AZ)"
+    style: {
+        fill: "#FCE4EC"
+        stroke: "#E91E63"
+        stroke-width: 2
+        font-size: 45
+    }
+
+    # SG-DB: only allows inbound from SG-TASK on the DB port — unchanged from EC2 model
+    sg_db: {
+        label: "SG-DB\nInbound : 3306/5432 from SG-TASK only\nOutbound: none"
+        style: {
+            fill: "#FFFDE7"
+            stroke: "#F9A825"
+            stroke-width: 2
+            stroke-dash: 4
+            font-size: 28
+        }
+
+        aurora: {
+            label: "Amazon Aurora Serverless v2\n(MySQL 8.0 or PostgreSQL 15)"
+            style: {
+                fill: "#F8BBD0"
+                stroke: "#880E4F"
+                font-size: 34
+            }
+
+            writer: {
+                label: "Writer Instance\n(AZ-1 — PRIMARY)\nAuto-scales ACUs"
+                shape: cylinder
+                style: { font-size: 26 }
+            }
+
+            reader: {
+                label: "Reader Replica\n(AZ-2 — HA Failover)\nAuto-scales ACUs"
+                shape: cylinder
+                style: { font-size: 26 }
+            }
+        }
+    }
+}
+
+# ─── Supporting Services (AWS managed) ───
+support: {
+    label: "Supporting Services (AWS Managed)"
+    style: {
+        fill: "#F3E5F5"
+        stroke: "#9C27B0"
+        stroke-width: 2
+        font-size: 45
+    }
+
+    # ECR stores versioned Docker images for the Tomcat/JBoss container
+    ecr: {
+        label: "Amazon ECR\n(Tomcat/JBoss Docker Image)"
+        shape: image
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/ecr.svg
+        style: { font-size: 32 }
+    }
+
+    cloudwatch: {
+        label: "Amazon CloudWatch\n(Metrics, Logs & Alarms)"
+        shape: image
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/cloud_watch.svg
+        style: { font-size: 32 }
+    }
+
+    secrets: {
+        label: "AWS Secrets Manager\n(DB Credentials — Auto Rotation)"
+        shape: image
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/secrets.svg
+        style: { font-size: 32 }
+    }
+
+    # Task Execution Role: used by ECS agent to pull images and push logs
+    exec_role: {
+        label: "IAM Execution Role\n(ECR pull + CloudWatch Logs push)"
+        shape: image
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/iam_role.svg
+        style: { font-size: 32 }
+    }
+
+    # Task Role: assumed by the running container for app-level AWS API calls
+    task_role: {
+        label: "IAM Task Role\n(Secrets Manager GetSecretValue)"
+        shape: image
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/iam_policies.svg
+        style: { font-size: 32 }
+    }
+
+    s3_logs: {
+        label: "Amazon S3\n(ALB Access Logs)"
+        shape: image
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/s3_bucket.svg
+        style: { font-size: 32 }
+    }
+}
+
+# ─── Connections ───
+
+# End users reach the WAF first
+users -> edge.waf: "HTTPS (443)" { style: { font-size: 35 } }
+
+# WAF forwards clean traffic to the ALB
+edge.waf -> alb_layer.sg_alb.alb: "Filtered HTTPS" { style: { font-size: 35 } }
+
+# ACM binds the TLS certificate to the ALB HTTPS listener
+edge.acm -> alb_layer.sg_alb.alb: "TLS Certificate binding" { style: { font-size: 35 } }
+
+# ALB routes to Fargate task in AZ-1 (IP-based target group)
+alb_layer.sg_alb.alb -> app_tier.ecs_cluster.ecs_service.sg_task.task_az1: "HTTP :8080 (AZ-1)" { style: { font-size: 35 } }
+
+# ALB routes to Fargate task in AZ-2 (IP-based target group)
+alb_layer.sg_alb.alb -> app_tier.ecs_cluster.ecs_service.sg_task.task_az2: "HTTP :8080 (AZ-2)" { style: { font-size: 35 } }
+
+# ECS Execution Role pulls the container image from ECR at task startup
+support.exec_role -> support.ecr: "Authorize ECR pull" { style: { font-size: 35 } }
+support.ecr -> app_tier.ecs_cluster.ecs_service.sg_task.task_az1: "Pull Tomcat/JBoss image\n(via VPC Endpoint)" { style: { font-size: 35 } }
+
+# Fargate tasks write to Aurora writer
+app_tier.ecs_cluster.ecs_service.sg_task.task_az1 -> db_tier.sg_db.aurora.writer: "DB Read/Write :3306/5432" { style: { font-size: 35 } }
+app_tier.ecs_cluster.ecs_service.sg_task.task_az2 -> db_tier.sg_db.aurora.writer: "DB Write :3306/5432" { style: { font-size: 35 } }
+
+# Fargate AZ-2 task reads from Aurora reader replica
+app_tier.ecs_cluster.ecs_service.sg_task.task_az2 -> db_tier.sg_db.aurora.reader: "DB Read :3306/5432" { style: { font-size: 35 } }
+
+# Aurora synchronous storage replication
+db_tier.sg_db.aurora.writer <-> db_tier.sg_db.aurora.reader: "Synchronous Storage\nReplication (6-way)" { style: { font-size: 35 } }
+
+# Container logs streamed to CloudWatch Logs via Execution Role
+app_tier.ecs_cluster.ecs_service.sg_task.task_az1 -> support.cloudwatch: "Container Logs\n(awslogs driver)" { style: { font-size: 35 } }
+
+# Task Role allows containers to call Secrets Manager
+app_tier.ecs_cluster.ecs_service.sg_task.task_az1 -> support.secrets: "GetSecretValue\n(Task Role)" { style: { font-size: 35 } }
+
+# ECS Execution Role manages log streams in CloudWatch
+support.exec_role -> support.cloudwatch: "Create log streams" { style: { font-size: 35 } }
+
+# Task Role scoped to application-level AWS calls only
+support.task_role -> app_tier.ecs_cluster.ecs_service.sg_task.task_az1: "Assume Task Role\n(least-privilege)" { style: { font-size: 35 } }
+
+# ALB stores access logs to S3
+alb_layer.sg_alb.alb -> support.s3_logs: "Access Logs (async)" { style: { font-size: 35 } }

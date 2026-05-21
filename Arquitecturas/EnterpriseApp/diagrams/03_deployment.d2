@@ -1,0 +1,310 @@
+direction: down
+
+# ─── Internet: external public network ───
+internet: {
+    label: "Internet"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/others/internet.svg
+    style: { font-size: 40 }
+}
+
+# ─── AWS WAF: regional WebACL attached to the ALB ───
+waf: {
+    label: "AWS WAF\n(Regional WebACL)"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/waf.svg
+    style: { font-size: 35 }
+}
+
+# ─── AWS Region: all infrastructure resources reside here ───
+region: {
+    label: "AWS Region  (e.g. eu-west-1)"
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/aws_region.svg
+    style: {
+        font-size: 55
+        fill: "#F5F5F5"
+        stroke: "#888888"
+        stroke-width: 3
+    }
+
+    # ─── Internet Gateway: allows inbound/outbound internet traffic for the VPC ───
+    igw: {
+        label: "Internet Gateway"
+        shape: image
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/internet_gw.svg
+        style: { font-size: 35 }
+    }
+
+    # ─── VPC: isolated private network for all application resources ───
+    vpc: {
+        label: "VPC  (10.0.0.0/16)"
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/vpc.svg
+        style: {
+            font-size: 50
+            fill: "#EAF5EA"
+            stroke: "#4CAF50"
+            stroke-width: 2
+        }
+
+        # ─── ALB node spans both public subnets across AZs ───
+        alb: {
+            label: "Application Load Balancer\n• SG-ALB: 443, 80 from 0.0.0.0/0\n• HTTPS :443 listener (ACM cert)\n• HTTP :80 → HTTPS redirect\n• WAF WebACL attached"
+            style: {
+                fill: "#C8E6C9"
+                stroke: "#388E3C"
+                font-size: 28
+            }
+        }
+
+        # ─── Availability Zone 1 ───
+        az1: {
+            label: "Availability Zone 1"
+            style: {
+                fill: "#FFF8E1"
+                stroke: "#FFC107"
+                stroke-width: 2
+                stroke-dash: 3
+                font-size: 40
+            }
+
+            # ─── Public Subnet AZ-1: NAT Gateway, ALB endpoint ───
+            pub1: {
+                label: "Public Subnet  10.0.1.0/24"
+                icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/public_subnet.svg
+                style: {
+                    fill: "#DCEDC8"
+                    stroke: "#689F38"
+                    font-size: 32
+                }
+
+                natgw1: {
+                    label: "NAT Gateway\n(AZ-1)"
+                    shape: image
+                    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/nat_gw.svg
+                    style: { font-size: 28 }
+                }
+            }
+
+            # ─── Private App Subnet AZ-1: EC2 Tomcat/JBoss instances ───
+            app1: {
+                label: "Private App Subnet  10.0.11.0/24"
+                icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/private_subnet.svg
+                style: {
+                    fill: "#BBDEFB"
+                    stroke: "#1976D2"
+                    font-size: 32
+                }
+
+                sgweb1: {
+                    label: "SG-WEB\n(Inbound: :8080 from SG-ALB)"
+                    style: {
+                        fill: "#FFFDE7"
+                        stroke: "#F9A825"
+                        stroke-dash: 4
+                        font-size: 26
+                    }
+
+                    ec2a: {
+                        label: "EC2 t3.large\nTomcat / JBoss\n:8080"
+                        style: { font-size: 24 }
+                    }
+                }
+            }
+
+            # ─── Private DB Subnet AZ-1: Aurora Writer instance ───
+            db1: {
+                label: "Private DB Subnet  10.0.21.0/24"
+                icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/private_subnet.svg
+                style: {
+                    fill: "#F8BBD0"
+                    stroke: "#C62828"
+                    font-size: 32
+                }
+
+                sgdb1: {
+                    label: "SG-DB\n(Inbound: :3306/:5432 from SG-WEB)"
+                    style: {
+                        fill: "#FFFDE7"
+                        stroke: "#F9A825"
+                        stroke-dash: 4
+                        font-size: 26
+                    }
+
+                    aurora_w: {
+                        label: "Aurora Serverless v2\nWRITER (PRIMARY)\nAuto-scales: 0.5–32 ACU"
+                        shape: cylinder
+                        style: { font-size: 24 }
+                    }
+                }
+            }
+        }
+
+        # ─── Availability Zone 2 ───
+        az2: {
+            label: "Availability Zone 2"
+            style: {
+                fill: "#FFF8E1"
+                stroke: "#FFC107"
+                stroke-width: 2
+                stroke-dash: 3
+                font-size: 40
+            }
+
+            # ─── Public Subnet AZ-2: NAT Gateway, ALB endpoint ───
+            pub2: {
+                label: "Public Subnet  10.0.2.0/24"
+                icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/public_subnet.svg
+                style: {
+                    fill: "#DCEDC8"
+                    stroke: "#689F38"
+                    font-size: 32
+                }
+
+                natgw2: {
+                    label: "NAT Gateway\n(AZ-2)"
+                    shape: image
+                    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/nat_gw.svg
+                    style: { font-size: 28 }
+                }
+            }
+
+            # ─── Private App Subnet AZ-2: EC2 Tomcat/JBoss instances ───
+            app2: {
+                label: "Private App Subnet  10.0.12.0/24"
+                icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/private_subnet.svg
+                style: {
+                    fill: "#BBDEFB"
+                    stroke: "#1976D2"
+                    font-size: 32
+                }
+
+                sgweb2: {
+                    label: "SG-WEB\n(Inbound: :8080 from SG-ALB)"
+                    style: {
+                        fill: "#FFFDE7"
+                        stroke: "#F9A825"
+                        stroke-dash: 4
+                        font-size: 26
+                    }
+
+                    ec2b: {
+                        label: "EC2 t3.large\nTomcat / JBoss\n:8080"
+                        style: { font-size: 24 }
+                    }
+                }
+            }
+
+            # ─── Private DB Subnet AZ-2: Aurora Reader replica ───
+            db2: {
+                label: "Private DB Subnet  10.0.22.0/24"
+                icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/private_subnet.svg
+                style: {
+                    fill: "#F8BBD0"
+                    stroke: "#C62828"
+                    font-size: 32
+                }
+
+                sgdb2: {
+                    label: "SG-DB\n(Inbound: :3306/:5432 from SG-WEB)"
+                    style: {
+                        fill: "#FFFDE7"
+                        stroke: "#F9A825"
+                        stroke-dash: 4
+                        font-size: 26
+                    }
+
+                    aurora_r: {
+                        label: "Aurora Serverless v2\nREADER REPLICA (HA Failover)\nAuto-scales: 0.5–32 ACU"
+                        shape: cylinder
+                        style: { font-size: 24 }
+                    }
+                }
+            }
+        }
+    }
+
+    # ─── AWS Managed Services: regional services consumed by the app ───
+    support: {
+        label: "AWS Managed Services (Regional)"
+        style: {
+            fill: "#F3E5F5"
+            stroke: "#9C27B0"
+            stroke-width: 2
+            font-size: 45
+        }
+
+        cw: {
+            label: "CloudWatch\n(Metrics, Logs, Alarms)"
+            shape: image
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/cloud_watch.svg
+            style: { font-size: 32 }
+        }
+
+        sm: {
+            label: "Secrets Manager\n(DB Credentials)"
+            shape: image
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/secrets.svg
+            style: { font-size: 32 }
+        }
+
+        iam: {
+            label: "IAM\n(Instance Profile)"
+            shape: image
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/iam_role.svg
+            style: { font-size: 32 }
+        }
+
+        s3: {
+            label: "S3\n(ALB Access Logs)"
+            shape: image
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/s3_bucket.svg
+            style: { font-size: 32 }
+        }
+    }
+}
+
+# ─── Connections ───
+
+# Internet traffic flows first through WAF
+internet -> waf: "HTTPS (443)" { style: { font-size: 35 } }
+
+# WAF forwards filtered traffic to the Internet Gateway
+waf -> region.igw: "Filtered HTTPS traffic" { style: { font-size: 35 } }
+
+# Internet Gateway routes traffic to the ALB
+region.igw -> region.vpc.alb: "Inbound to ALB" { style: { font-size: 35 } }
+
+# ALB distributes to EC2 in AZ-1
+region.vpc.alb -> region.vpc.az1.app1.sgweb1.ec2a: "HTTP :8080 (AZ-1)" { style: { font-size: 35 } }
+
+# ALB distributes to EC2 in AZ-2
+region.vpc.alb -> region.vpc.az2.app2.sgweb2.ec2b: "HTTP :8080 (AZ-2)" { style: { font-size: 35 } }
+
+# EC2 AZ-1 writes to Aurora writer
+region.vpc.az1.app1.sgweb1.ec2a -> region.vpc.az1.db1.sgdb1.aurora_w: "DB :3306/:5432 (Write)" { style: { font-size: 35 } }
+
+# EC2 AZ-2 also writes to Aurora writer (single writer node)
+region.vpc.az2.app2.sgweb2.ec2b -> region.vpc.az1.db1.sgdb1.aurora_w: "DB :3306/:5432 (Write)" { style: { font-size: 35 } }
+
+# EC2 AZ-2 reads from Aurora reader replica to distribute read load
+region.vpc.az2.app2.sgweb2.ec2b -> region.vpc.az2.db2.sgdb2.aurora_r: "DB :3306/:5432 (Read)" { style: { font-size: 35 } }
+
+# Aurora synchronous storage replication across AZs (6 copies across 3 AZs)
+region.vpc.az1.db1.sgdb1.aurora_w <-> region.vpc.az2.db2.sgdb2.aurora_r: "Synchronous\nStorage Replication" { style: { font-size: 35 } }
+
+# EC2 outbound traffic exits via NAT GW in same AZ (for AWS API calls)
+region.vpc.az1.app1.sgweb1.ec2a -> region.vpc.az1.pub1.natgw1: "Outbound :443\n(AWS API calls)" { style: { font-size: 35 } }
+region.vpc.az2.app2.sgweb2.ec2b -> region.vpc.az2.pub2.natgw2: "Outbound :443\n(AWS API calls)" { style: { font-size: 35 } }
+
+# NAT Gateways route outbound traffic through the Internet Gateway
+region.vpc.az1.pub1.natgw1 -> region.igw: "NAT outbound (AZ-1)" { style: { font-size: 35 } }
+region.vpc.az2.pub2.natgw2 -> region.igw: "NAT outbound (AZ-2)" { style: { font-size: 35 } }
+
+# EC2 emits metrics and logs to CloudWatch (via NAT / VPC Endpoint)
+region.vpc.az1.app1.sgweb1.ec2a -> region.support.cw: "Metrics & Logs" { style: { font-size: 35 } }
+
+# EC2 retrieves DB credentials from Secrets Manager at startup
+region.vpc.az1.app1.sgweb1.ec2a -> region.support.sm: "GetSecretValue\n(DB credentials)" { style: { font-size: 35 } }
+
+# ALB stores access logs to S3 for audit
+region.vpc.alb -> region.support.s3: "Access logs (async)" { style: { font-size: 35 } }

@@ -1,0 +1,80 @@
+direction: right
+
+# ─── External end users accessing the app via web browser ───
+users: {
+    label: "End Users\n(Web Browsers)"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/users.svg
+    style: {
+        font-size: 35
+    }
+}
+
+# ─── DevOps/Ops team responsible for deployments and operations ───
+devops: {
+    label: "DevOps / Ops Team\n(CI/CD & Config Management)"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/others/user.svg
+    style: {
+        font-size: 35
+    }
+}
+
+# ─── Enterprise web application system boundary (all AWS resources inside) ───
+enterprise_app: {
+    label: "Enterprise Web Application\n(AWS Multi-AZ)"
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/aws_icon.svg
+    style: {
+        font-size: 50
+        fill: "#E8F4FD"
+        stroke: "#2196F3"
+        stroke-width: 3
+    }
+}
+
+# ─── Amazon CloudWatch: observability and alerting platform ───
+cloudwatch: {
+    label: "Amazon CloudWatch\n(Monitoring & Alarms)"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/cloud_watch.svg
+    style: {
+        font-size: 35
+    }
+}
+
+# ─── AWS IAM: identity and access management ───
+iam: {
+    label: "AWS IAM\n(Identity & Access Management)"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/iam_role.svg
+    style: {
+        font-size: 35
+    }
+}
+
+# ─── Connections ───
+
+# End users send HTTPS requests to the enterprise application
+users -> enterprise_app: "HTTPS (443)\nWeb Requests" {
+    style: { font-size: 35 }
+}
+
+# Application returns HTTP responses to end users
+enterprise_app -> users: "HTTPS Response\n(HTML / JSON)" {
+    style: { font-size: 35 }
+}
+
+# DevOps team deploys new versions and configuration
+devops -> enterprise_app: "Deploys new versions\n& configuration changes" {
+    style: { font-size: 35 }
+}
+
+# Application emits logs, metrics, and alarms to CloudWatch
+enterprise_app -> cloudwatch: "Emits metrics,\nlogs & alarms" {
+    style: { font-size: 35 }
+}
+
+# IAM provides execution roles and access policies to the application
+iam -> enterprise_app: "Provides IAM Roles\n& Access Policies" {
+    style: { font-size: 35 }
+}

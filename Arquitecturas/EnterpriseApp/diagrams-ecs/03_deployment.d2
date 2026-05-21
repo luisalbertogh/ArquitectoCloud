@@ -1,0 +1,360 @@
+direction: down
+
+# ─── Internet: external public network ───
+internet: {
+    label: "Internet"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/others/internet.svg
+    style: { font-size: 40 }
+}
+
+# ─── AWS WAF: regional WebACL attached to the ALB ───
+waf: {
+    label: "AWS WAF\n(Regional WebACL)"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/waf.svg
+    style: { font-size: 35 }
+}
+
+# ─── AWS Region: all infrastructure resources reside here ───
+region: {
+    label: "AWS Region  (e.g. eu-west-1)"
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/aws_region.svg
+    style: {
+        font-size: 55
+        fill: "#F5F5F5"
+        stroke: "#888888"
+        stroke-width: 3
+    }
+
+    # ─── Internet Gateway: inbound/outbound internet traffic for public subnets ───
+    igw: {
+        label: "Internet Gateway"
+        shape: image
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/internet_gw.svg
+        style: { font-size: 35 }
+    }
+
+    # ─── VPC: isolated private network ───
+    vpc: {
+        label: "VPC  (10.0.0.0/16)"
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/vpc.svg
+        style: {
+            font-size: 50
+            fill: "#EAF5EA"
+            stroke: "#4CAF50"
+            stroke-width: 2
+        }
+
+        # ─── ALB spans both public subnets; targets Fargate task IPs ───
+        alb: {
+            label: "Application Load Balancer\n• SG-ALB: 443, 80 from 0.0.0.0/0\n• HTTPS :443 (ACM cert) | HTTP :80 → redirect\n• IP-based target group (Fargate ENIs)\n• WAF WebACL attached"
+            style: {
+                fill: "#C8E6C9"
+                stroke: "#388E3C"
+                font-size: 26
+            }
+        }
+
+        # ─── VPC Interface & Gateway Endpoints: allow Fargate to reach AWS services without NAT ───
+        vpc_endpoints: {
+            label: "VPC Endpoints\n(avoid NAT charges; private traffic to AWS APIs)"
+            style: {
+                fill: "#EDE7F6"
+                stroke: "#7B1FA2"
+                stroke-width: 2
+                stroke-dash: 5
+                font-size: 32
+            }
+
+            ecr_api_ep: {
+                label: "Interface EP\ncom.amazonaws.*.ecr.api"
+                style: { font-size: 24 }
+            }
+
+            ecr_dkr_ep: {
+                label: "Interface EP\ncom.amazonaws.*.ecr.dkr"
+                style: { font-size: 24 }
+            }
+
+            s3_gw_ep: {
+                label: "Gateway EP\ncom.amazonaws.*.s3\n(ECR image layers)"
+                style: { font-size: 24 }
+            }
+
+            logs_ep: {
+                label: "Interface EP\ncom.amazonaws.*.logs\n(CloudWatch Logs)"
+                style: { font-size: 24 }
+            }
+
+            secrets_ep: {
+                label: "Interface EP\ncom.amazonaws.*.secretsmanager"
+                style: { font-size: 24 }
+            }
+        }
+
+        # ─── Availability Zone 1 ───
+        az1: {
+            label: "Availability Zone 1"
+            style: {
+                fill: "#FFF8E1"
+                stroke: "#FFC107"
+                stroke-width: 2
+                stroke-dash: 3
+                font-size: 40
+            }
+
+            # ─── Public Subnet AZ-1: NAT Gateway and ALB endpoint ───
+            pub1: {
+                label: "Public Subnet  10.0.1.0/24"
+                icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/public_subnet.svg
+                style: {
+                    fill: "#DCEDC8"
+                    stroke: "#689F38"
+                    font-size: 32
+                }
+
+                natgw1: {
+                    label: "NAT Gateway\n(AZ-1)\n(fallback outbound)"
+                    shape: image
+                    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/nat_gw.svg
+                    style: { font-size: 26 }
+                }
+            }
+
+            # ─── Private App Subnet AZ-1: Fargate tasks ───
+            app1: {
+                label: "Private App Subnet  10.0.11.0/24"
+                icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/private_subnet.svg
+                style: {
+                    fill: "#BBDEFB"
+                    stroke: "#1976D2"
+                    font-size: 32
+                }
+
+                sgtask1: {
+                    label: "SG-TASK\n(Inbound: :8080 from SG-ALB)"
+                    style: {
+                        fill: "#FFFDE7"
+                        stroke: "#F9A825"
+                        stroke-dash: 4
+                        font-size: 24
+                    }
+
+                    task_a: {
+                        label: "Fargate Task\nTomcat / JBoss\n:8080\n(0.5 vCPU / 1 GB)"
+                        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/ecs_task.svg
+                        style: { font-size: 22 }
+                    }
+                }
+            }
+
+            # ─── Private DB Subnet AZ-1: Aurora Writer ───
+            db1: {
+                label: "Private DB Subnet  10.0.21.0/24"
+                icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/private_subnet.svg
+                style: {
+                    fill: "#F8BBD0"
+                    stroke: "#C62828"
+                    font-size: 32
+                }
+
+                sgdb1: {
+                    label: "SG-DB\n(Inbound: :3306/:5432 from SG-TASK)"
+                    style: {
+                        fill: "#FFFDE7"
+                        stroke: "#F9A825"
+                        stroke-dash: 4
+                        font-size: 24
+                    }
+
+                    aurora_w: {
+                        label: "Aurora Serverless v2\nWRITER (PRIMARY)\n0.5–32 ACU"
+                        shape: cylinder
+                        style: { font-size: 22 }
+                    }
+                }
+            }
+        }
+
+        # ─── Availability Zone 2 ───
+        az2: {
+            label: "Availability Zone 2"
+            style: {
+                fill: "#FFF8E1"
+                stroke: "#FFC107"
+                stroke-width: 2
+                stroke-dash: 3
+                font-size: 40
+            }
+
+            # ─── Public Subnet AZ-2: NAT Gateway and ALB endpoint ───
+            pub2: {
+                label: "Public Subnet  10.0.2.0/24"
+                icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/public_subnet.svg
+                style: {
+                    fill: "#DCEDC8"
+                    stroke: "#689F38"
+                    font-size: 32
+                }
+
+                natgw2: {
+                    label: "NAT Gateway\n(AZ-2)\n(fallback outbound)"
+                    shape: image
+                    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/nat_gw.svg
+                    style: { font-size: 26 }
+                }
+            }
+
+            # ─── Private App Subnet AZ-2: Fargate tasks ───
+            app2: {
+                label: "Private App Subnet  10.0.12.0/24"
+                icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/private_subnet.svg
+                style: {
+                    fill: "#BBDEFB"
+                    stroke: "#1976D2"
+                    font-size: 32
+                }
+
+                sgtask2: {
+                    label: "SG-TASK\n(Inbound: :8080 from SG-ALB)"
+                    style: {
+                        fill: "#FFFDE7"
+                        stroke: "#F9A825"
+                        stroke-dash: 4
+                        font-size: 24
+                    }
+
+                    task_b: {
+                        label: "Fargate Task\nTomcat / JBoss\n:8080\n(0.5 vCPU / 1 GB)"
+                        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/ecs_task.svg
+                        style: { font-size: 22 }
+                    }
+                }
+            }
+
+            # ─── Private DB Subnet AZ-2: Aurora Reader ───
+            db2: {
+                label: "Private DB Subnet  10.0.22.0/24"
+                icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/private_subnet.svg
+                style: {
+                    fill: "#F8BBD0"
+                    stroke: "#C62828"
+                    font-size: 32
+                }
+
+                sgdb2: {
+                    label: "SG-DB\n(Inbound: :3306/:5432 from SG-TASK)"
+                    style: {
+                        fill: "#FFFDE7"
+                        stroke: "#F9A825"
+                        stroke-dash: 4
+                        font-size: 24
+                    }
+
+                    aurora_r: {
+                        label: "Aurora Serverless v2\nREADER REPLICA (HA)\n0.5–32 ACU"
+                        shape: cylinder
+                        style: { font-size: 22 }
+                    }
+                }
+            }
+        }
+    }
+
+    # ─── AWS Regional Managed Services ───
+    support: {
+        label: "AWS Managed Services (Regional)"
+        style: {
+            fill: "#F3E5F5"
+            stroke: "#9C27B0"
+            stroke-width: 2
+            font-size: 45
+        }
+
+        ecr: {
+            label: "Amazon ECR\n(Container Registry)"
+            shape: image
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/ecr.svg
+            style: { font-size: 32 }
+        }
+
+        cw: {
+            label: "CloudWatch\n(Metrics, Logs, Alarms)"
+            shape: image
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/cloud_watch.svg
+            style: { font-size: 32 }
+        }
+
+        sm: {
+            label: "Secrets Manager\n(DB Credentials)"
+            shape: image
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/secrets.svg
+            style: { font-size: 32 }
+        }
+
+        iam: {
+            label: "IAM\n(Task Role + Exec Role)"
+            shape: image
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/iam_role.svg
+            style: { font-size: 32 }
+        }
+
+        s3: {
+            label: "S3\n(ALB Access Logs)"
+            shape: image
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/s3_bucket.svg
+            style: { font-size: 32 }
+        }
+    }
+}
+
+# ─── Connections ───
+
+# Internet traffic flows through WAF first
+internet -> waf: "HTTPS (443)" { style: { font-size: 35 } }
+
+# WAF forwards filtered traffic to the Internet Gateway
+waf -> region.igw: "Filtered HTTPS" { style: { font-size: 35 } }
+
+# Internet Gateway routes inbound traffic to the ALB
+region.igw -> region.vpc.alb: "Inbound to ALB" { style: { font-size: 35 } }
+
+# ALB routes to Fargate task in AZ-1 (IP target)
+region.vpc.alb -> region.vpc.az1.app1.sgtask1.task_a: "HTTP :8080 (AZ-1)" { style: { font-size: 35 } }
+
+# ALB routes to Fargate task in AZ-2 (IP target)
+region.vpc.alb -> region.vpc.az2.app2.sgtask2.task_b: "HTTP :8080 (AZ-2)" { style: { font-size: 35 } }
+
+# Fargate tasks reach ECR via VPC Endpoint (no NAT needed)
+region.vpc.az1.app1.sgtask1.task_a -> region.vpc.vpc_endpoints.ecr_dkr_ep: "Pull image\n(startup)" { style: { font-size: 35 } }
+
+# VPC Endpoint forwards ECR request to regional ECR service
+region.vpc.vpc_endpoints.ecr_dkr_ep -> region.support.ecr: "ECR API" { style: { font-size: 35 } }
+
+# Fargate writes to Aurora Writer
+region.vpc.az1.app1.sgtask1.task_a -> region.vpc.az1.db1.sgdb1.aurora_w: "DB :3306/:5432 (Write)" { style: { font-size: 35 } }
+region.vpc.az2.app2.sgtask2.task_b -> region.vpc.az1.db1.sgdb1.aurora_w: "DB :3306/:5432 (Write)" { style: { font-size: 35 } }
+
+# Fargate AZ-2 reads from Aurora Reader replica
+region.vpc.az2.app2.sgtask2.task_b -> region.vpc.az2.db2.sgdb2.aurora_r: "DB :3306/:5432 (Read)" { style: { font-size: 35 } }
+
+# Aurora synchronous storage replication
+region.vpc.az1.db1.sgdb1.aurora_w <-> region.vpc.az2.db2.sgdb2.aurora_r: "Synchronous\nStorage Replication" { style: { font-size: 35 } }
+
+# Fargate tasks push container logs via VPC Endpoint
+region.vpc.az1.app1.sgtask1.task_a -> region.vpc.vpc_endpoints.logs_ep: "Container logs\n(awslogs driver)" { style: { font-size: 35 } }
+region.vpc.vpc_endpoints.logs_ep -> region.support.cw: "CloudWatch Logs API" { style: { font-size: 35 } }
+
+# Fargate retrieves DB credentials via VPC Endpoint
+region.vpc.az1.app1.sgtask1.task_a -> region.vpc.vpc_endpoints.secrets_ep: "GetSecretValue" { style: { font-size: 35 } }
+region.vpc.vpc_endpoints.secrets_ep -> region.support.sm: "Secrets Manager API" { style: { font-size: 35 } }
+
+# NAT Gateways remain for any non-AWS outbound traffic
+region.vpc.az1.app1.sgtask1.task_a -> region.vpc.az1.pub1.natgw1: "Non-AWS outbound\n(fallback)" { style: { font-size: 35 } }
+region.vpc.az1.pub1.natgw1 -> region.igw: "NAT outbound (AZ-1)" { style: { font-size: 35 } }
+region.vpc.az2.app2.sgtask2.task_b -> region.vpc.az2.pub2.natgw2: "Non-AWS outbound\n(fallback)" { style: { font-size: 35 } }
+region.vpc.az2.pub2.natgw2 -> region.igw: "NAT outbound (AZ-2)" { style: { font-size: 35 } }
+
+# ALB stores access logs to S3
+region.vpc.alb -> region.support.s3: "Access logs (async)" { style: { font-size: 35 } }

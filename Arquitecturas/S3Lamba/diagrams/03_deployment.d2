@@ -1,0 +1,132 @@
+direction: right
+
+# ─── AWS Region: all resources deployed within the same region ───
+region: {
+    label: "AWS Region  (e.g. eu-west-1)"
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/aws_region.svg
+    style: {
+        font-size: 55
+        fill: "#F3E5F5"
+        stroke: "#9C27B0"
+        stroke-width: 3
+    }
+
+    # ─── Amazon S3 managed service tier ───
+    s3: {
+        label: "Amazon S3"
+        style: {
+            font-size: 45
+            fill: "#E8F5E9"
+            stroke: "#4CAF50"
+        }
+
+        # Source bucket — receives incoming files, has event notification configured
+        source: {
+            label: "s3-source-<account-id>\n─────────────────\n• Versioning: Enabled\n• Encryption: SSE-S3\n• Event: ObjectCreated → Lambda"
+            shape: image
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/s3_bucket.svg
+            style: { font-size: 28 }
+        }
+
+        # Destination bucket — receives processed output from Lambda
+        dest: {
+            label: "s3-destination-<account-id>\n──────────────────────\n• Versioning: Enabled\n• Encryption: SSE-S3\n• Block All Public Access"
+            shape: image
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/s3_bucket.svg
+            style: { font-size: 28 }
+        }
+    }
+
+    # ─── AWS Lambda managed service tier ───
+    lambda-svc: {
+        label: "AWS Lambda"
+        style: {
+            font-size: 45
+            fill: "#FFF3E0"
+            stroke: "#FF9800"
+        }
+
+        # Lambda function configuration
+        fn: {
+            label: "file-processor\n────────────────\n• Runtime: Python 3.12\n• Memory: 512 MB\n• Timeout: 5 min\n• Concurrency: Reserved = 10"
+            shape: image
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/lambda.svg
+            style: { font-size: 28 }
+        }
+    }
+
+    # ─── AWS IAM (global service, shown in region for clarity) ───
+    iam-svc: {
+        label: "AWS IAM (Global)"
+        style: {
+            font-size: 45
+            fill: "#FCE4EC"
+            stroke: "#E91E63"
+        }
+
+        # Execution role assumed by the Lambda service
+        role: {
+            label: "lambda-s3-execution-role\n─────────────────────\n• Principal: lambda.amazonaws.com\n• Trust policy: AssumeRole"
+            shape: image
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/iam_role.svg
+            style: { font-size: 28 }
+        }
+
+        # Inline/managed policy with least-privilege S3 permissions
+        policy: {
+            label: "lambda-s3-access-policy\n────────────────────\n• s3:GetObject  → source bucket\n• s3:PutObject  → dest bucket\n• s3:ListBucket → both buckets\n• logs:CreateLogGroup / PutLogEvents"
+            shape: image
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/iam_policies.svg
+            style: { font-size: 28 }
+        }
+    }
+
+    # ─── Amazon CloudWatch: centralised observability ───
+    cw: {
+        label: "Amazon CloudWatch"
+        style: {
+            font-size: 45
+            fill: "#E3F2FD"
+            stroke: "#2196F3"
+        }
+
+        log-group: {
+            label: "Log Group\n/aws/lambda/file-processor\n────────────────────\n• Retention: 30 days\n• Metric filters + Alarms"
+            shape: image
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/cloud_watch.svg
+            style: { font-size: 28 }
+        }
+    }
+}
+
+# ─── Connections ───
+
+# S3 source bucket triggers Lambda on ObjectCreated
+region.s3.source -> region.lambda-svc.fn: "S3 Event Notification\n(s3:ObjectCreated:*)" {
+    style: { font-size: 35 }
+}
+
+# Lambda reads the file from the source bucket
+region.lambda-svc.fn -> region.s3.source: "GetObject" {
+    style: { font-size: 35 }
+}
+
+# Lambda writes the processed file to the destination bucket
+region.lambda-svc.fn -> region.s3.dest: "PutObject" {
+    style: { font-size: 35 }
+}
+
+# Lambda emits logs to CloudWatch log group
+region.lambda-svc.fn -> region.cw.log-group: "Execution logs\n& metrics" {
+    style: { font-size: 35 }
+}
+
+# IAM policy is attached to the execution role
+region.iam-svc.policy -> region.iam-svc.role: "Attached" {
+    style: { font-size: 35 }
+}
+
+# IAM execution role is assumed by the Lambda function
+region.iam-svc.role -> region.lambda-svc.fn: "Assumed by\nLambda service" {
+    style: { font-size: 35 }
+}

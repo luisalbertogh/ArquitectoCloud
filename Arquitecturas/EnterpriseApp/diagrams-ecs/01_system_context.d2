@@ -1,0 +1,100 @@
+direction: right
+
+# ─── External end users accessing the app via web browser ───
+users: {
+    label: "End Users\n(Web Browsers)"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/users.svg
+    style: {
+        font-size: 35
+    }
+}
+
+# ─── DevOps/Ops team responsible for deployments and CI/CD pipeline ───
+devops: {
+    label: "DevOps / Ops Team\n(CI/CD Pipeline)"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/others/user.svg
+    style: {
+        font-size: 35
+    }
+}
+
+# ─── Enterprise web application system boundary (ECS + Fargate variant) ───
+enterprise_app: {
+    label: "Enterprise Web Application\n(AWS — ECS + Fargate, Multi-AZ)"
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/aws_icon.svg
+    style: {
+        font-size: 50
+        fill: "#E8F4FD"
+        stroke: "#2196F3"
+        stroke-width: 3
+    }
+}
+
+# ─── Amazon ECR: container image registry ───
+ecr: {
+    label: "Amazon ECR\n(Container Image Registry)"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/ecr.svg
+    style: {
+        font-size: 35
+    }
+}
+
+# ─── Amazon CloudWatch: observability and alerting ───
+cloudwatch: {
+    label: "Amazon CloudWatch\n(Monitoring & Alarms)"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/cloud_watch.svg
+    style: {
+        font-size: 35
+    }
+}
+
+# ─── AWS IAM: identity and access management ───
+iam: {
+    label: "AWS IAM\n(Task Role & Execution Role)"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/iam_role.svg
+    style: {
+        font-size: 35
+    }
+}
+
+# ─── Connections ───
+
+# End users send HTTPS requests to the enterprise application
+users -> enterprise_app: "HTTPS (443)\nWeb Requests" {
+    style: { font-size: 35 }
+}
+
+# Application returns HTTPS responses to end users
+enterprise_app -> users: "HTTPS Response\n(HTML / JSON)" {
+    style: { font-size: 35 }
+}
+
+# DevOps team builds Docker images and pushes to ECR; deploys ECS services
+devops -> ecr: "docker push\n(Tomcat/JBoss image)" {
+    style: { font-size: 35 }
+}
+
+# DevOps team deploys and configures ECS services
+devops -> enterprise_app: "Deploys ECS service\n(new task definition revision)" {
+    style: { font-size: 35 }
+}
+
+# ECS Fargate pulls container image from ECR at task launch
+enterprise_app -> ecr: "Pull container image\n(at task startup)" {
+    style: { font-size: 35 }
+}
+
+# Application emits logs, metrics, and alarms to CloudWatch
+enterprise_app -> cloudwatch: "Emits metrics,\nlogs & alarms" {
+    style: { font-size: 35 }
+}
+
+# IAM provides Task Role and Execution Role to ECS tasks
+iam -> enterprise_app: "Provides Task Role\n& Execution Role" {
+    style: { font-size: 35 }
+}

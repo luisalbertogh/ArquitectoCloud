@@ -1,0 +1,73 @@
+shape: sequence_diagram
+
+# ─── Sequence diagram actors ───
+browser: "Browser\n(End User)"
+waf: "AWS WAF"
+alb: "App Load Balancer\n(SG-ALB)"
+ecs_svc: "ECS Service\n(Scheduler)"
+ecr: "Amazon ECR\n(VPC Endpoint)"
+fargate: "Fargate Task\nTomcat/JBoss (SG-TASK)"
+secrets: "Secrets Manager\n(VPC Endpoint)"
+aurora_w: "Aurora Writer\n(AZ-1, SG-DB)"
+aurora_r: "Aurora Reader\n(AZ-2, SG-DB)"
+cw: "CloudWatch Logs\n(VPC Endpoint)"
+
+# ─── Phase 1: Task startup (triggered by ECS Service when count < desired) ───
+ecs_svc -> ecs_svc: "1. Detect: running tasks < desired count"
+
+# ECS Execution Role pulls the Docker image from ECR via VPC Endpoint
+ecs_svc -> ecr: "2. Pull Tomcat/JBoss image\n(Execution Role, via ecr.dkr VPC Endpoint)"
+
+# ECR returns the container layers
+ecr -> fargate: "3. Stream image layers\n(via s3 Gateway Endpoint)"
+
+# Fargate task starts and Tomcat/JBoss initializes
+fargate -> fargate: "4. Start container; Tomcat/JBoss init"
+
+# ALB health check detects the new task as healthy
+alb -> fargate: "5. Health check GET /health"
+fargate -> alb: "6. HTTP 200 OK (healthy)"
+
+# ECS Service registers the task IP in the ALB IP target group
+ecs_svc -> alb: "7. Register task IP in target group"
+
+# ─── Phase 2: Normal HTTPS request flow ───
+
+# User sends HTTPS request
+browser -> waf: "8. HTTPS GET /app (port 443)"
+
+# WAF evaluates the request
+waf -> waf: "9. Evaluate OWASP rules, rate-limit"
+
+# WAF forwards clean request to ALB
+waf -> alb: "10. Forward clean request"
+
+# ALB logs access entry asynchronously
+alb -> cw: "11. Log access entry (async)"
+
+# ALB forwards HTTP request to the selected Fargate task IP
+alb -> fargate: "12. HTTP :8080 GET /app\n(X-Forwarded-For, X-Forwarded-Proto: https)"
+
+# Container checks local credentials cache
+fargate -> fargate: "13. Check credentials cache (TTL 5 min)"
+
+# Cache miss: call Secrets Manager via VPC Endpoint
+fargate -> secrets: "14. GetSecretValue (Task Role, cache miss)"
+secrets -> fargate: "15. Return DB credentials"
+
+# Container executes write query on Aurora Writer
+fargate -> aurora_w: "16. SQL INSERT/UPDATE (write)"
+aurora_w -> fargate: "17. Write acknowledged"
+
+# Container routes read-only query to Aurora Reader
+fargate -> aurora_r: "18. SQL SELECT (read-only)"
+aurora_r -> fargate: "19. Return result set"
+
+# Container streams logs to CloudWatch via VPC Endpoint
+fargate -> cw: "20. Emit container log & metrics (async, awslogs)"
+
+# Container sends HTTP response to ALB
+fargate -> alb: "21. HTTP 200 OK (response body)"
+
+# ALB adds security headers and returns HTTPS response
+alb -> browser: "22. HTTPS 200 OK\n(HSTS, X-Content-Type-Options)"

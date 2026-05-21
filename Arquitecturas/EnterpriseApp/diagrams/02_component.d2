@@ -1,0 +1,232 @@
+direction: right
+
+# ─── External: End Users ───
+users: {
+    label: "End Users\n(Web Browsers)"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/users.svg
+    style: { font-size: 35 }
+}
+
+# ─── Edge & Security Layer: WAF + ACM ───
+edge: {
+    label: "Edge & Security Layer"
+    style: {
+        fill: "#FFF3E0"
+        stroke: "#FF9800"
+        stroke-width: 2
+        font-size: 45
+    }
+
+    # AWS WAF for OWASP rule set, IP reputation and rate-limiting
+    waf: {
+        label: "AWS WAF\n(OWASP Rules / IP Reputation / Rate-Limit)"
+        shape: image
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/waf.svg
+        style: { font-size: 32 }
+    }
+
+    # ACM provides a managed TLS certificate for the ALB HTTPS listener
+    acm: {
+        label: "AWS Certificate Manager\n(Managed TLS/SSL Certificate)"
+        style: { font-size: 32 }
+    }
+}
+
+# ─── Load Balancing Layer: ALB across public subnets in both AZs ───
+alb_layer: {
+    label: "Load Balancing Layer\n(Public Subnets — Multi-AZ)"
+    style: {
+        fill: "#E8F5E9"
+        stroke: "#4CAF50"
+        stroke-width: 2
+        font-size: 45
+    }
+
+    # SG-ALB: restricts inbound traffic to 443/80 from the internet only
+    sg_alb: {
+        label: "SG-ALB\nInbound : 443, 80 from 0.0.0.0/0\nOutbound: 8080 to SG-WEB"
+        style: {
+            fill: "#FFFDE7"
+            stroke: "#F9A825"
+            stroke-width: 2
+            stroke-dash: 4
+            font-size: 28
+        }
+
+        alb: {
+            label: "Application Load Balancer\n• Multi-AZ (2+ AZs)\n• HTTPS listener :443 (ACM cert)\n• HTTP :80 → HTTPS redirect\n• WAF WebACL attached\n• Health-check every 30 s"
+            style: {
+                fill: "#C8E6C9"
+                stroke: "#388E3C"
+                font-size: 28
+            }
+        }
+    }
+}
+
+# ─── Application / Web Tier: EC2 instances running Tomcat/JBoss ───
+app_tier: {
+    label: "Application Tier\n(Private App Subnets — Multi-AZ)"
+    style: {
+        fill: "#E3F2FD"
+        stroke: "#2196F3"
+        stroke-width: 2
+        font-size: 45
+    }
+
+    # SG-WEB: only allows inbound from SG-ALB; outbound to SG-DB and NAT
+    sg_web: {
+        label: "SG-WEB\nInbound : 8080 from SG-ALB only\nOutbound: 3306/5432 to SG-DB, 443 via NAT"
+        style: {
+            fill: "#FFFDE7"
+            stroke: "#F9A825"
+            stroke-width: 2
+            stroke-dash: 4
+            font-size: 28
+        }
+
+        asg: {
+            label: "Auto Scaling Group\n(min 2 / desired 2 / max 6)"
+            style: {
+                fill: "#BBDEFB"
+                stroke: "#1565C0"
+                font-size: 36
+            }
+
+            ec2_az1: {
+                label: "EC2 (t3.large)\nTomcat / JBoss\nAZ-1  :8080"
+                style: { font-size: 26 }
+            }
+
+            ec2_az2: {
+                label: "EC2 (t3.large)\nTomcat / JBoss\nAZ-2  :8080"
+                style: { font-size: 26 }
+            }
+        }
+    }
+}
+
+# ─── Database Tier: Aurora Serverless v2 in isolated DB subnets ───
+db_tier: {
+    label: "Database Tier\n(Private DB Subnets — Multi-AZ)"
+    style: {
+        fill: "#FCE4EC"
+        stroke: "#E91E63"
+        stroke-width: 2
+        font-size: 45
+    }
+
+    # SG-DB: only allows inbound from SG-WEB on the DB port
+    sg_db: {
+        label: "SG-DB\nInbound : 3306/5432 from SG-WEB only\nOutbound: none"
+        style: {
+            fill: "#FFFDE7"
+            stroke: "#F9A825"
+            stroke-width: 2
+            stroke-dash: 4
+            font-size: 28
+        }
+
+        aurora: {
+            label: "Amazon Aurora Serverless v2\n(MySQL 8.0 or PostgreSQL 15)"
+            style: {
+                fill: "#F8BBD0"
+                stroke: "#880E4F"
+                font-size: 34
+            }
+
+            writer: {
+                label: "Writer Instance\n(AZ-1 — PRIMARY)\nAuto-scales ACUs"
+                shape: cylinder
+                style: { font-size: 26 }
+            }
+
+            reader: {
+                label: "Reader Replica\n(AZ-2 — HA Failover)\nAuto-scales ACUs"
+                shape: cylinder
+                style: { font-size: 26 }
+            }
+        }
+    }
+}
+
+# ─── Supporting Services (AWS managed, regional) ───
+support: {
+    label: "Supporting Services (AWS Managed)"
+    style: {
+        fill: "#F3E5F5"
+        stroke: "#9C27B0"
+        stroke-width: 2
+        font-size: 45
+    }
+
+    cloudwatch: {
+        label: "Amazon CloudWatch\n(Metrics, Logs & Alarms)"
+        shape: image
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/cloud_watch.svg
+        style: { font-size: 32 }
+    }
+
+    secrets: {
+        label: "AWS Secrets Manager\n(DB Credentials — Auto Rotation)"
+        shape: image
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/secrets.svg
+        style: { font-size: 32 }
+    }
+
+    iam: {
+        label: "AWS IAM\n(EC2 Instance Profile)"
+        shape: image
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/iam_role.svg
+        style: { font-size: 32 }
+    }
+
+    s3_logs: {
+        label: "Amazon S3\n(ALB Access Logs)"
+        shape: image
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/s3_bucket.svg
+        style: { font-size: 32 }
+    }
+}
+
+# ─── Connections ───
+
+# End users reach the WAF first
+users -> edge.waf: "HTTPS (443)" { style: { font-size: 35 } }
+
+# WAF forwards clean traffic to the ALB
+edge.waf -> alb_layer.sg_alb.alb: "Filtered HTTPS traffic" { style: { font-size: 35 } }
+
+# ACM provides TLS certificate to the ALB HTTPS listener
+edge.acm -> alb_layer.sg_alb.alb: "TLS Certificate binding" { style: { font-size: 35 } }
+
+# ALB distributes traffic to EC2 instances in AZ-1
+alb_layer.sg_alb.alb -> app_tier.sg_web.asg.ec2_az1: "HTTP :8080 (AZ-1)" { style: { font-size: 35 } }
+
+# ALB distributes traffic to EC2 instances in AZ-2
+alb_layer.sg_alb.alb -> app_tier.sg_web.asg.ec2_az2: "HTTP :8080 (AZ-2)" { style: { font-size: 35 } }
+
+# EC2 AZ-1 performs read/write operations on the Aurora writer instance
+app_tier.sg_web.asg.ec2_az1 -> db_tier.sg_db.aurora.writer: "DB Read/Write :3306/5432" { style: { font-size: 35 } }
+
+# EC2 AZ-2 routes writes to Aurora writer (single writer model)
+app_tier.sg_web.asg.ec2_az2 -> db_tier.sg_db.aurora.writer: "DB Write :3306/5432" { style: { font-size: 35 } }
+
+# EC2 AZ-2 can route read queries to the reader replica for load distribution
+app_tier.sg_web.asg.ec2_az2 -> db_tier.sg_db.aurora.reader: "DB Read :3306/5432" { style: { font-size: 35 } }
+
+# Aurora performs synchronous storage replication across AZs (6 copies across 3 AZs)
+db_tier.sg_db.aurora.writer <-> db_tier.sg_db.aurora.reader: "Synchronous Storage\nReplication (6-way)" { style: { font-size: 35 } }
+
+# EC2 emits metrics and application logs to CloudWatch
+app_tier.sg_web.asg.ec2_az1 -> support.cloudwatch: "Metrics & App Logs" { style: { font-size: 35 } }
+
+# EC2 retrieves DB credentials at startup (cached locally)
+app_tier.sg_web.asg.ec2_az1 -> support.secrets: "GetSecretValue\n(DB credentials)" { style: { font-size: 35 } }
+
+# IAM provides the EC2 instance profile granting Secrets Manager and CloudWatch access
+support.iam -> app_tier.sg_web.asg.ec2_az1: "Instance Profile\n(least-privilege policies)" { style: { font-size: 35 } }
+
+# ALB stores access logs to S3 for audit and analysis
+alb_layer.sg_alb.alb -> support.s3_logs: "Access Logs (async)" { style: { font-size: 35 } }

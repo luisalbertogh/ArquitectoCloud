@@ -1,0 +1,124 @@
+direction: right
+
+# ─── AWS Account top-level container ───
+aws: {
+    label: "AWS Account"
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/aws_icon.svg
+    style: {
+        font-size: 55
+        fill: "#FAFAFA"
+        stroke: "#FF9900"
+        stroke-width: 3
+    }
+
+    # ─── Storage layer: both S3 buckets ───
+    storage: {
+        label: "Storage Layer (Amazon S3)"
+        style: {
+            font-size: 45
+            fill: "#E3F2FD"
+        }
+
+        # Source bucket — files are uploaded here
+        source-bucket: {
+            label: "Source Bucket\n(s3-source-*)"
+            shape: image
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/s3_bucket.svg
+            style: { font-size: 35 }
+        }
+
+        # Destination bucket — Lambda writes results here
+        dest-bucket: {
+            label: "Destination Bucket\n(s3-destination-*)"
+            shape: image
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/s3_bucket.svg
+            style: { font-size: 35 }
+        }
+    }
+
+    # ─── S3 Event Notification: decouples storage from compute ───
+    event-notification: {
+        label: "S3 Event Notification\n(s3:ObjectCreated:*)"
+        shape: image
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/event_rule.svg
+        style: { font-size: 35 }
+    }
+
+    # ─── Compute layer: Lambda function in Python ───
+    lambda: {
+        label: "Lambda Function\n(Python 3.12)"
+        shape: image
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/lambda.svg
+        style: { font-size: 35 }
+    }
+
+    # ─── Security layer: IAM role and policy ───
+    security: {
+        label: "Security (AWS IAM)"
+        style: {
+            font-size: 45
+            fill: "#FCE4EC"
+        }
+
+        # IAM role assumed by the Lambda service
+        iam-role: {
+            label: "IAM Execution Role\n(lambda-s3-role)"
+            shape: image
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/iam_role.svg
+            style: { font-size: 35 }
+        }
+
+        # IAM policy granting least-privilege S3 access
+        iam-policy: {
+            label: "IAM Policy\n(s3:GetObject, s3:PutObject,\ns3:ListBucket)"
+            shape: image
+            icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/iam_policies.svg
+            style: { font-size: 35 }
+        }
+    }
+
+    # ─── Observability: CloudWatch Logs ───
+    logs: {
+        label: "CloudWatch Logs\n(/aws/lambda/file-processor)"
+        shape: image
+        icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/cloud_watch.svg
+        style: { font-size: 35 }
+    }
+}
+
+# ─── Connections ───
+
+# Source bucket publishes an event when a new object is created
+aws.storage.source-bucket -> aws.event-notification: "Publishes event\non PutObject" {
+    style: { font-size: 35 }
+}
+
+# Event notification invokes Lambda asynchronously
+aws.event-notification -> aws.lambda: "Invokes function\n(async)" {
+    style: { font-size: 35 }
+}
+
+# Lambda reads the uploaded file from the source bucket
+aws.lambda -> aws.storage.source-bucket: "GetObject\n(read uploaded file)" {
+    style: { font-size: 35 }
+}
+
+# Lambda writes the processed result to the destination bucket
+aws.lambda -> aws.storage.dest-bucket: "PutObject\n(write processed file)" {
+    style: { font-size: 35 }
+}
+
+# Lambda writes execution logs to CloudWatch
+aws.lambda -> aws.logs: "Writes execution logs" {
+    style: { font-size: 35 }
+}
+
+# IAM policy is attached to the IAM role
+aws.security.iam-policy -> aws.security.iam-role: "Attached to role" {
+    style: { font-size: 35 }
+}
+
+# IAM role is assumed by the Lambda service principal
+aws.security.iam-role -> aws.lambda: "Assumed by\nLambda service" {
+    style: { font-size: 35 }
+}

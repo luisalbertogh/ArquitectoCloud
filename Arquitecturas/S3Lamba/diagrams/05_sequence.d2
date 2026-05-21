@@ -1,0 +1,39 @@
+shape: sequence_diagram
+
+# ─── Sequence diagram actors ───
+operator: "Operator"
+source_bucket: "Source S3 Bucket"
+s3_event: "S3 Event\nNotification"
+lambda_fn: "Lambda Function\n(Python)"
+dest_bucket: "Destination S3\nBucket"
+cw_logs: "CloudWatch Logs"
+
+# ─── Step 1: Operator uploads a file to the source bucket ───
+operator -> source_bucket: "1. PutObject (upload file)"
+
+# ─── Step 2: Source bucket emits an ObjectCreated event ───
+source_bucket -> s3_event: "2. Emit ObjectCreated event\n(bucket, key, metadata)"
+
+# ─── Step 3: Event notification asynchronously invokes Lambda ───
+s3_event -> lambda_fn: "3. Invoke Lambda async\n(event payload: bucket + key)"
+
+# ─── Step 4: Lambda logs the received event ───
+lambda_fn -> cw_logs: "4. Log: Processing started\n(requestId, bucket, key)"
+
+# ─── Step 5: Lambda reads the uploaded file from source ───
+lambda_fn -> source_bucket: "5. GetObject (bucket, key)"
+
+# ─── Step 6: Source bucket returns the file content ───
+source_bucket -> lambda_fn: "6. Return file bytes (stream)"
+
+# ─── Step 7: Lambda applies business logic / transformation ───
+lambda_fn -> lambda_fn: "7. Process / transform file"
+
+# ─── Step 8: Lambda writes the result to the destination bucket ───
+lambda_fn -> dest_bucket: "8. PutObject (processed file)"
+
+# ─── Step 9: Destination bucket confirms the write ───
+dest_bucket -> lambda_fn: "9. Return success (ETag)"
+
+# ─── Step 10: Lambda logs successful completion ───
+lambda_fn -> cw_logs: "10. Log: Processing complete\n(duration, output key)"

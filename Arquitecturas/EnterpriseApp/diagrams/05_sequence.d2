@@ -1,0 +1,56 @@
+shape: sequence_diagram
+
+# ─── Sequence diagram actors: represent each system component as a participant ───
+browser: "Browser\n(End User)"
+waf: "AWS WAF"
+alb: "App Load Balancer\n(SG-ALB)"
+ec2: "EC2 Tomcat/JBoss\n(Auto Scaling, SG-WEB)"
+secrets: "Secrets Manager"
+aurora_w: "Aurora Writer\n(AZ-1, SG-DB)"
+aurora_r: "Aurora Reader\n(AZ-2, SG-DB)"
+cw: "CloudWatch"
+
+# ─── Step 1: User initiates HTTPS request from the browser ───
+browser -> waf: "1. HTTPS GET /app (port 443)"
+
+# ─── Step 2: WAF evaluates the request against rule groups ───
+waf -> waf: "2. Evaluate WAF rules\n(OWASP ruleset, IP reputation, rate-limit)"
+
+# ─── Step 3: WAF forwards clean traffic to the ALB ───
+waf -> alb: "3. Forward clean HTTPS request"
+
+# ─── Step 4: ALB logs the access entry to CloudWatch/S3 asynchronously ───
+alb -> cw: "4. Log access entry (async)"
+
+# ─── Step 5: ALB selects a healthy EC2 target via round-robin and forwards HTTP ───
+alb -> ec2: "5. HTTP :8080 GET /app\n(X-Forwarded-For, X-Forwarded-Proto: https)"
+
+# ─── Step 6: EC2 checks local credentials cache before calling Secrets Manager ───
+ec2 -> ec2: "6. Check local credentials cache (TTL 5 min)"
+
+# ─── Step 7: Cache miss — EC2 calls Secrets Manager to retrieve DB credentials ───
+ec2 -> secrets: "7. GetSecretValue (on cache miss)"
+
+# ─── Step 8: Secrets Manager returns the current DB credentials ───
+secrets -> ec2: "8. Return DB credentials (username + password)"
+
+# ─── Step 9: EC2 executes write query on Aurora Writer ───
+ec2 -> aurora_w: "9. SQL INSERT/UPDATE (write operation)"
+
+# ─── Step 10: Aurora Writer returns success ───
+aurora_w -> ec2: "10. Write acknowledged"
+
+# ─── Step 11: EC2 routes read-only query to Aurora Reader for load distribution ───
+ec2 -> aurora_r: "11. SQL SELECT (read-only query)"
+
+# ─── Step 12: Aurora Reader returns the result set ───
+aurora_r -> ec2: "12. Return result set"
+
+# ─── Step 13: EC2 emits application logs and metrics to CloudWatch asynchronously ───
+ec2 -> cw: "13. Emit app log & metrics (async)"
+
+# ─── Step 14: EC2 sends the HTTP response back to the ALB ───
+ec2 -> alb: "14. HTTP 200 OK (response body: JSON/HTML)"
+
+# ─── Step 15: ALB adds security headers and delivers HTTPS response to browser ───
+alb -> browser: "15. HTTPS 200 OK\n(Strict-Transport-Security, X-Content-Type-Options)"

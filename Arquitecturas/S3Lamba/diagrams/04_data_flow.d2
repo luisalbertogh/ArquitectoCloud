@@ -1,0 +1,81 @@
+direction: right
+
+# ─── Data source: operator uploads a file ───
+upload: {
+    label: "File Upload\n(AWS Console / CLI / SDK)"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/others/files.svg
+    style: { font-size: 35 }
+}
+
+# ─── Source S3 bucket: persistent data store for incoming files ───
+source: {
+    label: "Source S3 Bucket\n[Data Store]"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/s3_bucket.svg
+    style: { font-size: 35 }
+}
+
+# ─── S3 Event Notification: routing layer ───
+event: {
+    label: "S3 Event Notification\n(s3:ObjectCreated:*)\n[Event Router]"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/event_rule.svg
+    style: { font-size: 35 }
+}
+
+# ─── Lambda function: transform and processing layer ───
+lambda: {
+    label: "Lambda Function\n(Python 3.12)\n[Transform / Process]"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/lambda.svg
+    style: { font-size: 35 }
+}
+
+# ─── Destination S3 bucket: persistent data store for processed output ───
+dest: {
+    label: "Destination S3 Bucket\n[Data Store]"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/s3_bucket.svg
+    style: { font-size: 35 }
+}
+
+# ─── CloudWatch Logs: audit and monitoring sink ───
+logs: {
+    label: "CloudWatch Logs\n[Audit & Monitoring]"
+    shape: image
+    icon: ../../../../.copilot/skills/d2-sketcher/assets/icons/aws/cloud_watch.svg
+    style: { font-size: 35 }
+}
+
+# ─── Data flow connections ───
+
+# Operator pushes a binary object to S3
+upload -> source: "Binary object\n(PutObject, any file type)" {
+    style: { font-size: 35 }
+}
+
+# Source bucket triggers an event when the object is created
+source -> event: "ObjectCreated event\n(bucket + object key + metadata)" {
+    style: { font-size: 35 }
+}
+
+# Event delivers the JSON payload to Lambda
+event -> lambda: "JSON event payload\n(bucket, key, size, eTag, region)" {
+    style: { font-size: 35 }
+}
+
+# Lambda reads the file content from source
+lambda -> source: "GetObject\n(stream file bytes)" {
+    style: { font-size: 35 }
+}
+
+# Lambda writes the transformed output to destination
+lambda -> dest: "PutObject\n(processed / transformed file)" {
+    style: { font-size: 35 }
+}
+
+# Lambda emits execution metadata to CloudWatch
+lambda -> logs: "Execution metadata\n(start, duration, status, errors)" {
+    style: { font-size: 35 }
+}
